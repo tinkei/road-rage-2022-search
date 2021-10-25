@@ -65,7 +65,7 @@ scenario_loader:
   # DEFAULT: loads all scenarios from the specified scenario folder
   # RANDOM: loads randomly selected scenarios from the specified scenario folder
   # SPECIFIC: loads specified scenarios, see below
-  inputmode: RANDOM
+  inputmode: DEFAULT
 
   # number of scenarios to be randomly selected. this only works for inputmode set to RANDOM
   random_count: 3

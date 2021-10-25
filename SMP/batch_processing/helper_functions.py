@@ -16,12 +16,11 @@ from commonroad.prediction.prediction import TrajectoryPrediction, SetBasedPredi
 from commonroad.scenario.obstacle import ObstacleType, DynamicObstacle
 from commonroad.scenario.scenario import Scenario
 from commonroad.scenario.trajectory import Trajectory
-from commonroad.visualization.draw_dispatch_cr import draw_object
-from commonroad.visualization.plot_helper import redraw_obstacles
+from commonroad.visualization.mp_renderer import MPRenderer
 from matplotlib.animation import FuncAnimation
 
-from SMP.batch_processing.scenario_loader import ScenarioLoader
 from SMP.batch_processing.process_scenario import ResultType, ResultText, SearchResult
+from SMP.batch_processing.scenario_loader import ScenarioLoader
 from SMP.maneuver_automaton.maneuver_automaton import ManeuverAutomaton
 from SMP.motion_planner.motion_planner import MotionPlannerType
 
@@ -414,69 +413,69 @@ def init_processing(logger_name: str, for_multi_processing: bool = True):
     return configuration, logger, scenario_loader, def_automaton, result_dict
 
 
-def save_gif(scenario: Scenario, planning_problem: PlanningProblem, trajectory: Trajectory, output_path: str) -> None:
-    print(f"Generating GIF for {scenario.scenario_id} ...")
-
-    # create the ego vehicle prediction using the trajectory and the shape of the obstacle
-    dynamic_obstacle_initial_state = trajectory.state_list[0]
-    dynamic_obstacle_shape = Rectangle(width=1.8, length=4.3)
-    # dynamic_obstacle_prediction = TrajectoryPrediction(trajectory, dynamic_obstacle_shape)
-    dynamic_obstacle_prediction = TrajectoryPrediction(Trajectory(1, trajectory.state_list[1:]), dynamic_obstacle_shape)
-
-    # generate the dynamic obstacle according to the specification
-    dynamic_obstacle_id = scenario.generate_object_id()
-    dynamic_obstacle_type = ObstacleType.CAR
-    dynamic_obstacle = DynamicObstacle(dynamic_obstacle_id,
-                                       dynamic_obstacle_type,
-                                       dynamic_obstacle_shape,
-                                       dynamic_obstacle_initial_state,
-                                       dynamic_obstacle_prediction)
-
-    # configuration for plotting
-    fig_num = os.getpid()
-    figsize = (15, 15)
-
-    fig = plt.figure(fig_num, figsize=figsize)
-    (ln,) = plt.plot([], [], animated=True)
-
-    frame_count = len(trajectory.state_list)
-    # delay between frames in milliseconds, 1 second * dt to get actual time in ms
-    interval = (1000 * scenario.dt)
-    # add short padding to create a short break before the loop (1 sec)
-    frame_count += int(0.5 / scenario.dt)
-    # a dictionary that holds the plot limits at each time step
-    dict_plot_limits = get_plot_limits(trajectory, frame_count)
-
-    # helper functions for plotting
-    def init_plot():
-        fig.gca().axis('equal')
-        ax = fig.gca()
-        draw_object(scenario, plot_limits=dict_plot_limits[0], ax=ax)
-        draw_object(planning_problem, plot_limits=dict_plot_limits[0], ax=ax)
-        draw_object(dynamic_obstacle, plot_limits=dict_plot_limits[0], ax=ax,
-                    draw_params={'time_begin': 0,
-                                 'dynamic_obstacle': {'shape': {'facecolor': 'green'}}})
-        fig.tight_layout()
-        return (ln,)
-
-    def animate_plot(frame):
-        fig.clf()
-        fig.gca().axis('equal')
-        ax = fig.gca()
-        draw_object(scenario, plot_limits=dict_plot_limits[frame], ax=ax, draw_params={'time_begin': frame})
-        draw_object(planning_problem, plot_limits=dict_plot_limits[frame], ax=ax)
-        draw_object(dynamic_obstacle, plot_limits=dict_plot_limits[frame], ax=ax,
-                    draw_params={'time_begin': frame,
-                                 'dynamic_obstacle': {'shape': {'facecolor': 'green'}}})
-        fig.tight_layout()
-        return (ln,)
-
-    anim = FuncAnimation(fig, animate_plot, frames=frame_count, init_func=init_plot, blit=True, interval=interval)
-
-    file_name = scenario.scenario_id + os.extsep + 'gif'
-    anim.save(os.path.join(output_path, file_name), dpi=30, writer="imagemagick")
-    plt.close(fig)
-    # print(f"{scenario.benchmark_id} GIF saved.")
+# def save_gif(scenario: Scenario, planning_problem: PlanningProblem, trajectory: Trajectory, output_path: str) -> None:
+#     print(f"Generating GIF for {scenario.scenario_id} ...")
+#
+#     # create the ego vehicle prediction using the trajectory and the shape of the obstacle
+#     dynamic_obstacle_initial_state = trajectory.state_list[0]
+#     dynamic_obstacle_shape = Rectangle(width=1.8, length=4.3)
+#     # dynamic_obstacle_prediction = TrajectoryPrediction(trajectory, dynamic_obstacle_shape)
+#     dynamic_obstacle_prediction = TrajectoryPrediction(Trajectory(1, trajectory.state_list[1:]), dynamic_obstacle_shape)
+#
+#     # generate the dynamic obstacle according to the specification
+#     dynamic_obstacle_id = scenario.generate_object_id()
+#     dynamic_obstacle_type = ObstacleType.CAR
+#     dynamic_obstacle = DynamicObstacle(dynamic_obstacle_id,
+#                                        dynamic_obstacle_type,
+#                                        dynamic_obstacle_shape,
+#                                        dynamic_obstacle_initial_state,
+#                                        dynamic_obstacle_prediction)
+#
+#     # configuration for plotting
+#     fig_num = os.getpid()
+#     figsize = (15, 15)
+#
+#     fig = plt.figure(fig_num, figsize=figsize)
+#     (ln,) = plt.plot([], [], animated=True)
+#
+#     frame_count = len(trajectory.state_list)
+#     # delay between frames in milliseconds, 1 second * dt to get actual time in ms
+#     interval = (1000 * scenario.dt)
+#     # add short padding to create a short break before the loop (1 sec)
+#     frame_count += int(0.5 / scenario.dt)
+#     # a dictionary that holds the plot limits at each time step
+#     dict_plot_limits = get_plot_limits(trajectory, frame_count)
+#
+#     # helper functions for plotting
+#     def init_plot():
+#         fig.gca().axis('equal')
+#         ax = fig.gca()
+#         draw_object(scenario, plot_limits=dict_plot_limits[0], ax=ax)
+#         draw_object(planning_problem, plot_limits=dict_plot_limits[0], ax=ax)
+#         draw_object(dynamic_obstacle, plot_limits=dict_plot_limits[0], ax=ax,
+#                     draw_params={'time_begin': 0,
+#                                  'dynamic_obstacle': {'shape': {'facecolor': 'green'}}})
+#         fig.tight_layout()
+#         return (ln,)
+#
+#     def animate_plot(frame):
+#         fig.clf()
+#         fig.gca().axis('equal')
+#         ax = fig.gca()
+#         draw_object(scenario, plot_limits=dict_plot_limits[frame], ax=ax, draw_params={'time_begin': frame})
+#         draw_object(planning_problem, plot_limits=dict_plot_limits[frame], ax=ax)
+#         draw_object(dynamic_obstacle, plot_limits=dict_plot_limits[frame], ax=ax,
+#                     draw_params={'time_begin': frame,
+#                                  'dynamic_obstacle': {'shape': {'facecolor': 'green'}}})
+#         fig.tight_layout()
+#         return (ln,)
+#
+#     anim = FuncAnimation(fig, animate_plot, frames=frame_count, init_func=init_plot, blit=True, interval=interval)
+#
+#     file_name = scenario.scenario_id + os.extsep + 'gif'
+#     anim.save(os.path.join(output_path, file_name), dpi=30, writer="imagemagick")
+#     plt.close(fig)
+#     # print(f"{scenario.benchmark_id} GIF saved.")
 
 
 def save_gif2(scenario: Scenario, planning_problem: PlanningProblem, trajectory: Trajectory, output_path: str) -> None:
@@ -484,7 +483,7 @@ def save_gif2(scenario: Scenario, planning_problem: PlanningProblem, trajectory:
 
     # create the ego vehicle prediction using the trajectory and the shape of the obstacle
     dynamic_obstacle_initial_state = trajectory.state_list[0]
-    # todo: car size is not given!!
+    # todo: use real vehicle size
     dynamic_obstacle_shape = Rectangle(width=1.8, length=4.3)
     dynamic_obstacle_prediction = TrajectoryPrediction(trajectory, dynamic_obstacle_shape)
 
@@ -514,27 +513,30 @@ def save_gif2(scenario: Scenario, planning_problem: PlanningProblem, trajectory:
 
     fig = plt.figure(fig_num, figsize=figsize)
     (ln,) = plt.plot([], [], animated=True)
-    scenario_handle = {}
-    dyn_obstacle_handle = {}
 
     def init_plot():
         fig.gca().axis('equal')
         ax = fig.gca()
-        draw_object(scenario, plot_limits=dict_plot_limits[0], ax=ax, handles=scenario_handle)
-        draw_object(planning_problem, plot_limits=dict_plot_limits[0], ax=ax, handles=scenario_handle)
-        draw_object(dynamic_obstacle, plot_limits=dict_plot_limits[0], ax=ax, handles=dyn_obstacle_handle,
-                    draw_params={'time_begin': 0,
-                                 'dynamic_obstacle': {'shape': {'facecolor': 'green'}}})
+        renderer = MPRenderer(plot_limits=dict_plot_limits[0], ax=ax)
+
+        scenario.draw(renderer)
+        planning_problem.draw(renderer)
+        dynamic_obstacle.draw(renderer, draw_params={'time_begin': 0,
+                                                     'dynamic_obstacle': {'shape': {'facecolor': 'green'}}})
+
         fig.tight_layout()
+        renderer.render()
         return (ln,)
 
     def animate_plot(frame):
-        redraw_obstacles(scenario, handles=scenario_handle, plot_limits=dict_plot_limits[frame], figure_handle=fig,
-                         draw_params={'time_begin': frame}, draw=False)
-        redraw_dynamic_obstacles([dynamic_obstacle], handles=dyn_obstacle_handle, plot_limits=dict_plot_limits[frame],
-                                 figure_handle=fig,
-                                 draw_params={'time_begin': frame,
-                                              'dynamic_obstacle': {'shape': {'facecolor': 'green'}}}, draw=False)
+        renderer = MPRenderer(plot_limits=dict_plot_limits[frame])
+
+        scenario.draw(renderer, draw_params={'time_begin': frame})
+        planning_problem.draw(renderer)
+        dynamic_obstacle.draw(renderer, draw_params={'time_begin': frame,
+                                                     'dynamic_obstacle': {'shape': {'facecolor': 'green'}}})
+
+        renderer.render()
         return (ln,)
 
     anim = FuncAnimation(fig, animate_plot, frames=frame_count, init_func=init_plot, blit=True, interval=interval)
@@ -542,7 +544,6 @@ def save_gif2(scenario: Scenario, planning_problem: PlanningProblem, trajectory:
     file_name = str(scenario.scenario_id) + os.extsep + 'gif'
     anim.save(os.path.join(output_path, file_name), dpi=30, writer="imagemagick")
     plt.close(fig)
-    # print(f"{scenario.benchmark_id} GIF saved.")
 
 
 def str2bool(bool_string: str):
@@ -587,8 +588,11 @@ def redraw_dynamic_obstacles(dyn_obst_list: List[DynamicObstacle], handles,
                 handle.remove()
     handles.clear()
 
+    renderer = MPRenderer(plot_limits=plot_limits)
     # redraw dynamic obstacles
-    draw_object(dyn_obst_list, draw_params=draw_params, plot_limits=plot_limits, handles=handles)
+    for obs in dyn_obst_list:
+        obs.draw(renderer, draw_params=draw_params)
+    # draw_object(dyn_obst_list, draw_params=draw_params, plot_limits=plot_limits, handles=handles)
 
     # update plot
     if draw is True:
@@ -611,4 +615,5 @@ def redraw_dynamic_obstacles(dyn_obst_list: List[DynamicObstacle], handles,
                     '<plot_helper/redraw_dynamic_obstacles> Backend for matplotlib needs to be \'Qt5Agg\' or \'TkAgg\' but is'
                     '\'%s\'' % mpl.get_backend())
 
+        renderer.render()
         figure_handle.canvas.flush_events()

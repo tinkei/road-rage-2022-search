@@ -3439,10 +3439,6 @@
             </center>
          </rectangle>
       </position>
-      <orientation>
-         <intervalStart>-0.2</intervalStart>
-         <intervalEnd>0.2</intervalEnd>
-      </orientation>
       <time>
         <intervalStart>30</intervalStart>
         <intervalEnd>40</intervalEnd>

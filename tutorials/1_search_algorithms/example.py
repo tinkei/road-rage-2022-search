@@ -10,7 +10,7 @@ except ImportError:
     mpl.use('TkAgg')
 
 from commonroad.common.file_reader import CommonRoadFileReader
-from commonroad.visualization.draw_dispatch_cr import draw_object
+from commonroad.visualization.mp_renderer import MPRenderer
 
 # add current directory to python path for local imports
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -22,7 +22,6 @@ from motion_planner.plot_config import StudentScriptPlotConfig
 def main():
     # configurations
     path_scenario = '../../scenarios/tutorial/ZAM_Tutorial_Urban-3_2.xml'
-    id_type_vehicle = 2
     file_motion_primitives = 'V_9.0_9.0_Vstep_0_SA_-0.2_0.2_SAstep_0.4_T_0.5_Model_BMW320i.xml'
     config_plot = StudentScriptPlotConfig(DO_PLOT=True)
 
@@ -33,10 +32,15 @@ def main():
 
     # plot scenario
     plt.figure(figsize=(8, 8))
-    draw_object(scenario)
-    draw_object(planning_problem_set)
+    renderer = MPRenderer()
+
+    scenario.draw(renderer)
+    planning_problem_set.draw(renderer)
+
     plt.gca().set_aspect('equal')
     plt.margins(0, 0)
+
+    renderer.render()
     plt.show()
     # close the figure to continue!
 

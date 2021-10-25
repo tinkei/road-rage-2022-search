@@ -73,6 +73,15 @@ $ sudo bash build.sh -e /path/to/your/anaconda3/envs/commonroad-py37 -v 3.X --cg
 
 **Note**: you need to substitute `/path/to/your/anaconda3/envs/commonroad-py37` with the path to your Anaconda environment, and `X` with your python version (e. g. setting X to 7 for 3.7).
 
+Lastly, we install the [CommonRoad Route Planner](https://gitlab.lrz.de/tum-cps/commonroad-route-planner) package. Simply clone the repository and install the package with:
+
+```sh
+$ git clone https://gitlab.lrz.de/tum-cps/commonroad-route-planner.git
+$ pip install .
+```
+
+
+
 
 ## Getting Started
 

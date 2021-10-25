@@ -9,9 +9,9 @@ __status__ = "Beta"
 import enum
 from typing import List, Dict, Tuple, Type
 
-import numpy as np
 import ipywidgets as widgets
 import matplotlib.pyplot as plt
+import numpy as np
 from IPython import display
 from IPython.display import display
 from commonroad.geometry.shape import Rectangle
@@ -21,7 +21,7 @@ from commonroad.scenario.obstacle import ObstacleType, DynamicObstacle
 from commonroad.scenario.scenario import Scenario
 from commonroad.scenario.trajectory import State, Trajectory
 # import CommonRoad-io modules
-from commonroad.visualization.draw_dispatch_cr import draw_object
+from commonroad.visualization.mp_renderer import MPRenderer
 from ipywidgets import widgets
 from matplotlib.lines import Line2D
 
@@ -63,17 +63,20 @@ def plot_legend(plotting_config: Type[PlotConfig]):
 def plot_search_scenario(scenario, initial_state, ego_shape, planning_problem, config: Type[PlotConfig]):
     plt.figure(figsize=(22.5, 4.5))
     plt.axis('equal')
-    plt.xlim(55, 100)
-    plt.ylim(-2.5, 5.5)
+    renderer = MPRenderer(plot_limits=[55, 100, -2.5, 5.5])
     draw_params = {'scenario': {'lanelet': {'facecolor': '#F8F8F8'}}}
-    draw_object(scenario, draw_params=draw_params)
+    scenario.draw(renderer, draw_params=draw_params)
+
     ego_vehicle = DynamicObstacle(obstacle_id=scenario.generate_object_id(), obstacle_type=ObstacleType.CAR,
                                   obstacle_shape=ego_shape,
                                   initial_state=initial_state)
-    draw_object(ego_vehicle)
-    draw_object(planning_problem)
+    ego_vehicle.draw(renderer)
+    planning_problem.draw(renderer)
+
     if config.PLOT_LEGEND:
         plot_legend(plotting_config=config)
+
+    renderer.render()
 
 
 def initial_visualization(scenario, initial_state, ego_shape, planning_problem, config: Type[PlotConfig], path_fig):
@@ -143,6 +146,7 @@ def update_visualization(primitive: List[State], status: MotionPrimitiveStatus, 
                 print('Saving was not successful')
         else:
             plt.pause(time_pause)
+
     return dict_node_status
 
 
@@ -161,6 +165,7 @@ def display_steps(scenario_data, config, algorithm, **args):
         # don't show graph for the first time running the cell calling this function
         try:
             show_scenario(scenario_data, node_status=list_states_nodes[iteration], config=config)
+
         except:
             pass
 
@@ -254,18 +259,19 @@ def visualize_solution(scenario: Scenario, planning_problem_set: PlanningProblem
     for i in range(0, num_time_steps):
         display.clear_output(wait=True)
         plt.figure(figsize=(10, 10))
-        draw_object(scenario, draw_params={'time_begin': i})
-        draw_object(planning_problem_set)
-        draw_object(dynamic_obstacle,
-                    draw_params={'time_begin': i,
-                                 'dynamic_obstacle': {'shape': {'facecolor': 'green'},
-                                                      'trajectory': {'draw_trajectory': True,
-                                                                     'facecolor': '#ff00ff',
-                                                                     'draw_continuous': True,
-                                                                     'z_order': 60,
-                                                                     'line_width': 5}
-                                                      }
-                                 })
+        renderer = MPRenderer()
+        scenario.draw(renderer, draw_params={'time_begin': i})
+        planning_problem_set.draw(renderer)
+        dynamic_obstacle.draw(renderer, draw_params={'time_begin': i,
+                                                     'dynamic_obstacle': {'shape': {'facecolor': 'green'},
+                                                                          'trajectory': {'draw_trajectory': True,
+                                                                                         'facecolor': '#ff00ff',
+                                                                                         'draw_continuous': True,
+                                                                                         'z_order': 60,
+                                                                                         'line_width': 5}
+                                                                          }
+                                                     })
 
         plt.gca().set_aspect('equal')
+        renderer.render()
         plt.show()

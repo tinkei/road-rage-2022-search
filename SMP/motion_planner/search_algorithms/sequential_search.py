@@ -7,9 +7,9 @@ from commonroad.scenario.trajectory import State
 from SMP.maneuver_automaton.motion_primitive import MotionPrimitive
 from SMP.motion_planner.node import Node
 from SMP.motion_planner.plot_config import DefaultPlotConfig
-from SMP.motion_planner.utility import MotionPrimitiveStatus, initial_visualization, update_visualization
 from SMP.motion_planner.queue import FIFOQueue, LIFOQueue
 from SMP.motion_planner.search_algorithms.base_class import SearchBaseClass
+from SMP.motion_planner.utility import MotionPrimitiveStatus, initial_visualization, update_visualization
 
 
 class SequentialSearch(SearchBaseClass, ABC):

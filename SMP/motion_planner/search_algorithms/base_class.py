@@ -118,13 +118,15 @@ class SearchBaseClass(ABC):
         else:
             self.time_desired = Interval(0, np.inf)
 
+        self.position_desired = None
         if hasattr(self.planningProblem.goal.state_list[0], 'position'):
             if hasattr(self.planningProblem.goal.state_list[0].position, 'vertices'):
                 self.position_desired = self.calc_goal_interval(self.planningProblem.goal.state_list[0].position.vertices)
-            else:
-                self.position_desired = None
-        else:
-            self.position_desired = None
+
+            elif hasattr(self.planningProblem.goal.state_list[0].position, 'center'):
+                x = self.planningProblem.goal.state_list[0].position.center[0]
+                y = self.planningProblem.goal.state_list[0].position.center[1]
+                self.position_desired = [Interval(start=x, end=x), Interval(start=y, end=y)]
 
         if hasattr(self.planningProblem.goal.state_list[0], 'velocity'):
             self.velocity_desired = self.planningProblem.goal.state_list[0].velocity
@@ -536,7 +538,7 @@ class SearchBaseClass(ABC):
         return currVerOnLane, index_prevCenterVert, index_nextCenterVert
 
     @staticmethod
-    def find_adjacent_lanetlets_same_direction(curr_lanelet: Lanelet) -> List[int]:
+    def find_adjacent_lanelets_same_direction(curr_lanelet: Lanelet) -> List[int]:
         """
         Finds the list_lanelets_adjacent of a lanelet in the same direction
 

@@ -44,11 +44,13 @@ class BestFirstSearch(SearchBaseClass, ABC):
 
         if self.position_desired is None:
             return self.time_desired.start - node_current.list_paths[-1][-1].time_step
+
         else:
             velocity = node_current.list_paths[-1][-1].velocity
 
             if np.isclose(velocity, 0):
                 return np.inf
+
             else:
                 return self.calc_euclidean_distance(current_node=node_current) / velocity
 
