@@ -25,7 +25,7 @@ You can either run the code locally, in a virtual machine, or in a docker contai
 
 2. **Ubuntu, MacOS, Windows**: a docker file and a docker image is available if you wish to run the code in a docker container. Refer to `docker/README.md` for further instructions. Minimum system requirements are listed [here](https://docs.docker.com/desktop/).
 
-3. **Ubuntu 18.04**: If you wish to install the code locally, proceed with the installation guide below.
+3. **Ubuntu 18.04/20.04, MacOS**: If you wish to install the code locally, proceed with the installation guide below.
 
 ## Installation Guide
 
@@ -35,7 +35,7 @@ We recommend using [Anaconda](https://www.anaconda.com/) to manage your environm
 
 After installing Anaconda, create a new environment with:
 ``` sh
-$ conda create -n commonroad-py37 python=3.7
+$ conda create -n commonroad-py37 python=3.7 -y
 ```
 
 Here the name of the environment is called **commonroad-py37**. You may also change this name as you wish. In such case, don't forget to change it in the following commands as well. **Always activate** this environment before you do anything related:
@@ -47,13 +47,9 @@ $ source activate commonroad-py37
 ```
 Install `Jupyter Notebook` and supplementary modules:
 ```sh
-$ conda install jupyter ipykernel ipywidgets sphinx scipy
+$ conda install jupyter ipykernel ipywidgets sphinx scipy -y
 $ jupyter nbextension install --py widgetsnbextension --user
 $ jupyter nbextension enable widgetsnbextension --user --py
-```
-Install `Imagemagick` (required for saving GIF animations of solutions):
-```sh
-$ sudo apt-get install imagemagick imagemagick-doc
 ```
 Then, install the dependencies with:
 
@@ -63,24 +59,59 @@ $ pip install -r requirements.txt
 
 This will install related dependencies specified in `requirements.txt`. 
 
-Next, we move on to the installation of [CommonRoad Drivability Checker](https://commonroad.in.tum.de/drivability_checker). This package provides functionalities such as collision checks, kinematic feasibility checks, road boundary checks, etc. Full installation commands are given below, other installation options can be found [here](https://commonroad.in.tum.de/docs/commonroad-drivability-checker/sphinx/installation.html).
+We install `Imagemagick` (required for saving GIF animations of solutions) with the following commands:
+
+```sh
+# Ubuntu
+$ sudo apt-get install imagemagick imagemagick-doc -y
+
+# MacOS
+$ brew install imagemagick
+```
+
+### CommonRoad Route Planner
+
+The [CommonRoad Route Planner](https://gitlab.lrz.de/tum-cps/commonroad-route-planner) package provides functionalities of planning high level routes and generating reference paths leading to goal regions. It can be simply installed with the following commands:
+
+```sh
+$ git clone https://gitlab.lrz.de/tum-cps/commonroad-route-planner.git
+$ cd commonroad-route-planner
+$ pip install .
+```
+
+### CommonRoad Drivability Checker
+
+The [CommonRoad Drivability Checker](https://commonroad.in.tum.de/drivability_checker) provides functionalities such as collision checks, kinematic feasibility checks, road boundary checks, etc. After cloning the package, you can choose to install it either with script installation or manual installation:
 
 ```sh
 $ git clone https://gitlab.lrz.de/tum-cps/commonroad-drivability-checker.git
 $ cd commonroad-drivability-checker
-$ sudo bash build.sh -e /path/to/your/anaconda3/envs/commonroad-py37 -v 3.X --cgal --serializer -i -j 4
 ```
 
-**Note**: you need to substitute `/path/to/your/anaconda3/envs/commonroad-py37` with the path to your Anaconda environment, and `X` with your python version (e. g. setting X to 7 for 3.7).
-
-Lastly, we install the [CommonRoad Route Planner](https://gitlab.lrz.de/tum-cps/commonroad-route-planner) package. Simply clone the repository and install the package with:
+#### Script Installation
 
 ```sh
-$ git clone https://gitlab.lrz.de/tum-cps/commonroad-route-planner.git
-$ pip install .
+# Ubuntu
+$ bash build.sh -i
+
+# MacOS
+$ brew install cmake eigen boost libomp
+$ ./ build.sh -i
 ```
 
+#### Manual Installation
 
+```sh
+# Ubuntu
+$ sudo apt-get install libboost-dev libboost-thread-dev libboost-test-dev libboost-filesystem-dev libeigen3-dev
+$ git submodule update --init
+$ pip install -v .
+
+# MacOS
+$ brew install cmake eigen boost libomp
+$ git submodule update --init
+$ pip install -v .
+```
 
 
 ## Getting Started
