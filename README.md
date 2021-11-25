@@ -81,7 +81,7 @@ $ pip install .
 
 ### CommonRoad Drivability Checker
 
-The [CommonRoad Drivability Checker](https://commonroad.in.tum.de/drivability_checker) provides functionalities such as collision checks, kinematic feasibility checks, road boundary checks, etc. After cloning the package, you can choose to install it either with script installation or manual installation:
+The [CommonRoad Drivability Checker](https://commonroad.in.tum.de/drivability-checker) provides functionalities such as collision checks, kinematic feasibility checks, road boundary checks, etc. After cloning the package, you can choose to install it either with script installation or manual installation:
 
 ```sh
 $ git clone https://gitlab.lrz.de/tum-cps/commonroad-drivability-checker.git
