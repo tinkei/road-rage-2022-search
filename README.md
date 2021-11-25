@@ -92,11 +92,11 @@ $ cd commonroad-drivability-checker
 
 ```sh
 # Ubuntu
-$ bash build.sh -i
+$ bash build.sh -w -i
 
 # MacOS
 $ brew install cmake eigen boost libomp
-$ ./build.sh -i
+$ ./build.sh -w -i
 ```
 
 #### Manual Installation
@@ -105,12 +105,12 @@ $ ./build.sh -i
 # Ubuntu
 $ sudo apt-get install libboost-dev libboost-thread-dev libboost-test-dev libboost-filesystem-dev libeigen3-dev
 $ git submodule update --init
-$ pip install -v .
+$ pip install -v . --use-feature=in-tree-build
 
 # MacOS
 $ brew install cmake eigen boost libomp
 $ git submodule update --init
-$ pip install -v .
+$ pip install -v . --use-feature=in-tree-build
 ```
 
 
