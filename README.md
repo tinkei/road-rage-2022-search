@@ -17,7 +17,7 @@ $ git clone https://gitlab.lrz.de/tum-cps/commonroad-search.git
 
 You can either run the code locally, in a virtual machine, or in a docker container.
 
-1. **Ubuntu, MacOS, Windows**: a [VirtualBox](https://www.virtualbox.org/) image is available in which all the necessary packages have been installed. The virtual machine image can be downloaded via [this](https://nextcloud.in.tum.de/index.php/s/okSDgabXk2cNYis) link. The downloading and the default login passwords are both `commonroad`. You can update to the latest commit with typing the command in the `commonroad-search/` folder:
+1. **Ubuntu, MacOS, Windows**: a [VirtualBox](https://www.virtualbox.org/) image is available in which all the necessary packages have been installed. The virtual machine image can be downloaded via [this](https://nextcloud.in.tum.de/index.php/s/XTeWW4nwX3Pr8yL) link. The downloading and the default login passwords are both `commonroad`. You can update to the latest commit with typing the command in the `commonroad-search/` folder:
 
    ```sh
    $ git pull
@@ -96,7 +96,7 @@ $ bash build.sh -i
 
 # MacOS
 $ brew install cmake eigen boost libomp
-$ ./ build.sh -i
+$ ./build.sh -i
 ```
 
 #### Manual Installation
