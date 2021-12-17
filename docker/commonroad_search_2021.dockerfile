@@ -2,7 +2,7 @@ FROM continuumio/anaconda3
 
 RUN conda create -n commonroad-py37 python=3.7
 # add command to bashrc
-RUN echo "conda activate commonroad-py37" > ~/.bashrc
+RUN echo "source activate commonroad-py37" > ~/.bashrc
 # # link python3 to python3.7
 # RUN rm /usr/bin/python3 && ln -sf python3.7 /usr/bin/python3
 # install packages
