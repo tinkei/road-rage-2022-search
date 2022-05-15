@@ -69,6 +69,7 @@ class BestFirstSearch(SearchBaseClass, ABC):
                                     list_primitives=[self.motion_primitive_initial], depth_tree=0, priority=0)
         initial_visualization(self.scenario, self.state_initial, self.shape_ego, self.planningProblem, self.config_plot,
                               self.path_fig)
+        self.automaton.reset_diffv()
 
         # add current node (i.e., current path and primitives) to the frontier
         f_initial = self.evaluation_function(node_initial)

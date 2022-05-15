@@ -17,7 +17,7 @@ class MotionPrimitive:
         Inner class to represent the initial and final states of a motion primitive.
         """
 
-        def __init__(self, x, y, steering_angle, velocity, orientation, time_step=0):
+        def __init__(self, x, y, steering_angle, velocity, orientation, time_step=0, acceleration=None):
             """
             Initialisation of a state of a motion primitive.
 
@@ -34,6 +34,8 @@ class MotionPrimitive:
             self.velocity = velocity
             self.orientation = orientation
             self.time_step = time_step
+            if acceleration is not None:
+                self.acceleration = acceleration
 
         def __str__(self) -> str:
             """

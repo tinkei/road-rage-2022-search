@@ -5,6 +5,7 @@ import time
 import xml.etree.ElementTree as ElementTree
 from pathlib import Path
 from typing import List
+import numpy as np
 
 from commonroad.common.solution import VehicleType
 from commonroad.geometry.shape import Rectangle
@@ -343,17 +344,69 @@ class ManeuverAutomaton(object):
         :return: the closest start state velocity in the automaton
         """
         diff_velocity_min = float('inf')
+        diff_velocity = float('inf')
+        min_diff_index = len(self.list_primitives) # Slightly out of bounds.
         velocity_closest = None
 
-        for primitive in self.list_primitives:
-            diff_velocity = abs(velocity_initial - primitive.state_initial.velocity)
-            if diff_velocity < diff_velocity_min:
-                diff_velocity_min = diff_velocity
+        for index, primitive in enumerate(self.list_primitives):
+            diff_velocity_abs = abs(velocity_initial - primitive.state_initial.velocity)
+            if diff_velocity_abs < diff_velocity_min:
+                diff_velocity_min = diff_velocity_abs
+                diff_velocity = velocity_initial - primitive.state_initial.velocity
+                min_diff_index = index
                 velocity_closest = primitive.state_initial.velocity
 
         assert velocity_closest is not None, "Closest velocity to the planning problem not found!"
 
-        return velocity_closest
+        print(f'Attempting to match scenario\'s initial velocity with the closest primitive.')
+        # print(f'Initial velocity   {velocity_initial}')
+        # print(f'Closest velocity   {velocity_closest}')
+        print(f'Difference         {diff_velocity}')
+        # print(f'Adjusted velocity  {velocity_closest + diff_velocity}')
+        # Option 1: Replace only one primitive.
+        # self.list_primitives[min_diff_index].state_initial.velocity += diff_velocity
+        # Option 2: Offset velocity of all primitives.
+        # for index, primitive in enumerate(self.list_primitives):
+        #     primitive.state_initial.velocity += diff_velocity
+        #     primitive.state_final.velocity += diff_velocity
+        #     for state in primitive.trajectory.state_list:
+        #         state.velocity += diff_velocity
+        #         # break # Modify only the first state.
+        # Option 3: Offset velocity of only the affected primitives.
+        # for index, primitive in enumerate(self.list_primitives):
+        #     if abs(velocity_closest - primitive.state_initial.velocity) < 0.01:
+        #         primitive.state_initial.velocity += diff_velocity
+        #         # primitive.state_final.velocity += diff_velocity
+        #         for state in primitive.trajectory.state_list:
+        #             state.velocity += diff_velocity
+        #             break # Modify only the first state.
+        # print(f'"Updated" velocity {self.list_primitives[min_diff_index].state_initial.velocity}')
+        self.diff_velocity = diff_velocity
+
+        # return velocity_closest
+        # return self.list_primitives[min_diff_index].state_initial.velocity
+        return velocity_closest, diff_velocity
+
+    def reset_diffv(self):
+
+        # Option 1: Replace only one primitive.
+        # self.list_primitives[min_diff_index].state_initial.velocity -= self.diff_velocity
+        # Option 2: Offset velocity of all primitives.
+        # for index, primitive in enumerate(self.list_primitives):
+        #     primitive.state_initial.velocity -= self.diff_velocity
+        #     primitive.state_final.velocity -= self.diff_velocity
+        #     for state in primitive.trajectory.state_list:
+        #         state.velocity -= self.diff_velocity
+        #         break # Modify only the first state.
+        # Option 3: Offset velocity of only the affected primitives.
+        # for index, primitive in enumerate(self.list_primitives):
+        #     if abs(velocity_closest - primitive.state_initial.velocity) < 0.01:
+        #         primitive.state_initial.velocity -= self.diff_velocity
+        #         # primitive.state_final.velocity -= self.diff_velocity
+        #         for state in primitive.trajectory.state_list:
+        #             state.velocity -= self.diff_velocity
+        #             break # Modify only the first state.
+        pass
 
     def set_vehicle_type_for_primitives(self) -> None:
         """
@@ -378,15 +431,26 @@ class ManeuverAutomaton(object):
 
         # the initial velocity of the planning problem may be any value, we need to obtain the closest velocity to it
         # from state_initials of the primitives in order to get the feasible successors of the planning problem
-        initial_state.velocity = self.get_closest_initial_velocity(planning_problem.initial_state.velocity)
+        initial_state.velocity, _ = self.get_closest_initial_velocity(planning_problem.initial_state.velocity)
+        # velocity_closest, diff_velocity = self.get_closest_initial_velocity(planning_problem.initial_state.velocity)
 
         # turn initial state into a motion primitive to check for connectivity to subsequent motion primitives
         state_final = MotionPrimitive.PrimitiveState(x=initial_state.position[0],
                                                      y=initial_state.position[1],
                                                      steering_angle=initial_state.steering_angle,
+                                                    #  velocity=initial_state.velocity - diff_velocity, # Modified.
                                                      velocity=initial_state.velocity,
                                                      orientation=initial_state.orientation,
                                                      time_step=initial_state.time_step)
+        # if hasattr(initial_state, 'acceleration'):
+        #     state_final = MotionPrimitive.PrimitiveState(x=initial_state.position[0],
+        #                                                 y=initial_state.position[1],
+        #                                                 steering_angle=initial_state.steering_angle,
+        #                                                 #  velocity=initial_state.velocity - diff_velocity, # Modified.
+        #                                                 velocity=initial_state.velocity,
+        #                                                 acceleration=initial_state.acceleration,
+        #                                                 orientation=initial_state.orientation,
+        #                                                 time_step=initial_state.time_step)
 
         # create a dummy initial primitive for creating and holding successors from the initial state
         # noinspection PyTypeChecker
