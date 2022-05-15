@@ -265,22 +265,59 @@ def visualize_solution(scenario: Scenario, planning_problem_set: PlanningProblem
                                        dynamic_obstacle_prediction)
 
     # visualize scenario
-    for i in range(0, num_time_steps):
-        display.clear_output(wait=True)
-        plt.figure(figsize=(10, 10))
-        renderer = MPRenderer()
-        scenario.draw(renderer, draw_params={'time_begin': i})
-        planning_problem_set.draw(renderer)
-        dynamic_obstacle.draw(renderer, draw_params={'time_begin': i,
-                                                     'dynamic_obstacle': {'shape': {'facecolor': 'green'},
-                                                                          'trajectory': {'draw_trajectory': True,
-                                                                                         'facecolor': '#ff00ff',
-                                                                                         'draw_continuous': True,
-                                                                                         'z_order': 60,
-                                                                                         'line_width': 5}
-                                                                          }
-                                                     })
+    animate = True
+    if not animate:
+        for i in range(0, num_time_steps):
+            display.clear_output(wait=True)
+            plt.figure(figsize=(10, 10))
+            renderer = MPRenderer()
+            scenario.draw(renderer, draw_params={'time_begin': i})
+            planning_problem_set.draw(renderer)
+            dynamic_obstacle.draw(renderer, draw_params={'time_begin': i,
+                                                        'dynamic_obstacle': {'shape': {'facecolor': 'green'},
+                                                                            'trajectory': {'draw_trajectory': True,
+                                                                                            'facecolor': '#ff00ff',
+                                                                                            'draw_continuous': True,
+                                                                                            'z_order': 60,
+                                                                                            'line_width': 5}
+                                                                            }
+                                                        })
 
-        plt.gca().set_aspect('equal')
-        renderer.render()
-        plt.show()
+            plt.gca().set_aspect('equal')
+            renderer.render()
+            plt.show()
+    else:
+        dpi = 100
+        fig = plt.figure(figsize=(19.2,10.8), dpi=dpi)
+        video_output = f'video/{str(scenario.scenario_id)}-solution.mp4'
+        writer = FFMpegWriter(fps=int(1/scenario.dt))
+        with writer.saving(fig, video_output, dpi):
+            for i in range(0, num_time_steps):
+                # display.clear_output(wait=True)
+                # plt.figure(figsize=(10, 10))
+                renderer = MPRenderer()
+                scenario.draw(renderer, draw_params={'time_begin': i})
+                planning_problem_set.draw(renderer)
+                dynamic_obstacle.draw(renderer, draw_params={
+                    'time_begin': i,
+                    'dynamic_obstacle': {
+                        'shape': {'facecolor': 'green'},
+                        'trajectory': {
+                            'draw_trajectory': True,
+                            'facecolor': '#ff00ff',
+                            'draw_continuous': True,
+                            'z_order': 60,
+                            'line_width': 1.5
+                        },
+                        'vehicle_shape': {
+                            'occupancy': {'shape': {'rectangle': {'facecolor': 'g'}}}
+                        },
+                    },
+                })
+
+                plt.gca().set_aspect('equal')
+                renderer.render()
+                writer.grab_frame()
+                # plt.show()
+
+    return video_output
