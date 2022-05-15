@@ -233,16 +233,25 @@ class ManeuverAutomaton(object):
         for node_trajectory in list_nodes_trajectories:
             motion_primitive = MotionPrimitiveParser.create_from_node(node_trajectory)
             self.append_primitive(motion_primitive)
+        self.sort_primitives()
 
         self.num_primitives = len(self.dict_primitives)
 
         self.set_vehicle_type_for_primitives()
 
-    def sort_primitives(self) -> None:
+    def sort_primitives(self, primitive_predecessor: MotionPrimitive = None) -> None:
         """
         Sorts the primitives according to the final states y coordinate
         """
-        self.list_primitives.sort(key=lambda x: x.state_final.y, reverse=False)
+        if primitive_predecessor is None:# or primitive_predecessor.state_initial is None:
+            self.list_primitives.sort(key=lambda x: x.state_final.y, reverse=False)
+        else:
+            self.list_primitives.sort(key=lambda x: (
+                # x.state_final.y +
+                abs(x.state_initial.velocity - primitive_predecessor.state_final.velocity) + 
+                abs(x.state_initial.orientation - primitive_predecessor.state_final.orientation) % np.pi + 
+                abs(x.state_initial.steering_angle - primitive_predecessor.state_final.steering_angle)
+            ), reverse=False)
 
     def _get_unique_primitive_id(self) -> int:
         """
@@ -307,6 +316,7 @@ class ManeuverAutomaton(object):
 
         :param primitive_predecessor:
         """
+        # self.sort_primitives(primitive_predecessor)
         for primitive_successor in self.list_primitives:
             if primitive_predecessor.is_connectable(primitive_successor):
                 primitive_predecessor.list_successors.append(primitive_successor)
