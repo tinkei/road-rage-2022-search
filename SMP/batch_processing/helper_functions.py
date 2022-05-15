@@ -196,6 +196,8 @@ def parse_cost_function(cost: str) -> CostFunction:
         cr_cost = CostFunction.SM2
     elif cost == 'SM3':
         cr_cost = CostFunction.SM3
+    elif cost == 'TR1':
+        cr_cost = CostFunction.TR1
     else:
         raise ValueError('Selected cost function is not valid: {}.'.format(cost))
     return cr_cost
@@ -222,6 +224,10 @@ def parse_motion_planner_type(motion_planner_type: str) -> MotionPlannerType:
         return MotionPlannerType.DLS
     elif motion_planner_type == MotionPlannerType.STUDENT.value:
         return MotionPlannerType.STUDENT
+    elif motion_planner_type == MotionPlannerType.STUDENT_ASTAR.value:
+        return MotionPlannerType.STUDENT_ASTAR
+    elif motion_planner_type == MotionPlannerType.STUDENT_GBFS.value:
+        return MotionPlannerType.STUDENT_GBFS
     elif motion_planner_type == MotionPlannerType.STUDENT_EXAMPLE.value:
         return MotionPlannerType.STUDENT_EXAMPLE
     else:
