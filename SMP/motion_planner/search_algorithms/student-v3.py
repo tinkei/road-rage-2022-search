@@ -1,9 +1,4 @@
-import gc
-import psutil
-import traceback
-
 # from matplotlib.patches import Rectangle
-from sqlite3 import Time
 from commonroad.geometry.shape import Rectangle, Polygon, ShapeGroup, Circle
 from SMP.motion_planner.node import Node, PriorityNode
 
@@ -40,15 +35,10 @@ class StudentMotionPlanner(AStarSearch):
         # print('StudentMotionPlanner V2 - Squared spacing of motion primitives.')
         # print('StudentMotionPlanner V3 - Observe lane direction. Update heuristic cost weights.')
         # print('StudentMotionPlanner V3.1 - Use old primitive.')
-        # print('StudentMotionPlanner V3.2 - Add cost to vehicle orientation to lane.')
-        print('StudentMotionPlanner V3.3 - Add route cost. Adapt to interactive scenario.')
+        print('StudentMotionPlanner V3.2 - Add cost to vehicle orientation to lane.')
 
         self.iteration = 0
-        self.print_every = 200
-        self.frontier_limit = 7500
-        self.sys_memory_cap = 90
-        self.sys_memory_diff = 30
-        self.sys_memory_curr = psutil.virtual_memory().percent
+        self.print_every = 100
         self.goal_is_reached = False
 
         self.tsi = TrafficSigInterpreter(scenario.scenario_id.country_id, scenario.lanelet_network)
@@ -57,17 +47,17 @@ class StudentMotionPlanner(AStarSearch):
         if hasattr(self.planningProblem.goal.state_list[0], 'position'): # and hasattr(self.planningProblem.goal.state_list[0].position, 'vertices'):
             print(f'Standard mode. Goal(s):')
             self.survival_mode = False
-            # for i, state in enumerate(self.planningProblem.goal.state_list):
-            #     print(f'Goal state {i}:')
-            #     print(state)
+            for i, state in enumerate(self.planningProblem.goal.state_list):
+                print(f'Goal state {i}:')
+                print(state)
             self.initial_distance = self.calc_euclidean_distance(Node([[planningProblem.initial_state]], [], 0))
-            print(f'Initial distance to goal: {self.initial_distance}')
+            print(f'Initial Euclidean distance: {self.initial_distance}')
         else:
             print(f'Survival mode. Only time goal:')
             self.survival_mode = True
-            # for i, state in enumerate(self.planningProblem.goal.state_list):
-            #     print(f'Goal state {i}:')
-            #     print(state)
+            for i, state in enumerate(self.planningProblem.goal.state_list):
+                print(f'Goal state {i}:')
+                print(state)
 
         if self.automaton.type_vehicle == VehicleType.FORD_ESCORT:
             self.vehicle = parameters_vehicle1()
@@ -101,7 +91,6 @@ class StudentMotionPlanner(AStarSearch):
         # Identify lanelets in the correct direction of travel along the planned route.
         # Source: https://commonroad.in.tum.de/forum/t/identify-landlet-direction-of-travel-from-lanelet-id-or-position/885/2
         set_ids_lanelets = set(self.route.list_ids_lanelets)
-        self.set_ids_lanelets = set_ids_lanelets
         # obtain lanelets in the same direction as the route
         terminate = False
         while not terminate:
@@ -143,28 +132,19 @@ class StudentMotionPlanner(AStarSearch):
 
         self.iteration += 1
         if self.iteration % (self.print_every * 10) == 0:
-            # display.clear_output(wait=True)
-            pass
+            display.clear_output(wait=True)
         if self.iteration % self.print_every == 0:
-            # display.clear_output(wait=True)
-            print(f'A* | {self.scenario.scenario_id} | Iter {self.iteration} | Path {len(node_current.list_paths[-1])} | Processed: {self.frontier.count} | Frontier count: {len(self.frontier.list_elements)} | Memory use: {psutil.virtual_memory().percent:.1f}%')
-            gc.collect()
-
-        if len(self.frontier.list_elements) > self.frontier_limit:
-            raise MemoryError(f'Manually aborting scenario {self.scenario.scenario_id} as frontier size grows too large.')
-        if psutil.virtual_memory().percent > self.sys_memory_cap or psutil.virtual_memory().percent - self.sys_memory_curr > self.sys_memory_diff:
-            raise MemoryError(f'Manually aborting scenario {self.scenario.scenario_id} as memory use exceeded limit.')
+            print(f'A* | {self.scenario.scenario_id} | Iteration {self.iteration} | Path length: {len(node_current.list_paths[-1])}')
 
         # print(f'Iteration {self.iteration}')
         # for state in node_current.list_paths[-1]:
         #     print(state.attributes)
         # print()
 
-        # No need to test. It's already tested before adding this current node!
-        # if not self.is_collision_free(node_current.list_paths[-1]):
-        #     print('Collision! Path rejected!')
-        #     node_current.priority = np.inf
-        #     return np.inf
+        if not self.is_collision_free(node_current.list_paths[-1]):
+            # print('Collision! Path rejected!')
+            node_current.priority = np.inf
+            return np.inf
 
         self.goal_is_reached = self.reached_goal(node_current.list_paths[-1])
         # if self.goal_is_reached:
@@ -176,14 +156,9 @@ class StudentMotionPlanner(AStarSearch):
             try:
                 cost = self.ce.evaluate_pp_solution(self.scenario, self.planningProblem, trajectory)
                 g_cost = cost.total_costs
-            except TimeoutError as e:
-                raise e
-            except MemoryError as e:
-                raise e
             except Exception as e:
                 print(f'Error evaluating cost function for {self.scenario.scenario_id}.')
                 print(repr(e))
-                print(traceback.format_exc())
                 g_cost = 100
             # print('Partial cost:')
             # print(cost)
@@ -191,11 +166,11 @@ class StudentMotionPlanner(AStarSearch):
             h_cost = self.heuristic_function(node_current=node_current)
             f_cost = g_cost + h_cost
             node_current.priority = g_cost
-            # if self.iteration % self.print_every == 0:
-            #     print(f'Evaluation cost: {g_cost}')
-            #     print(f'Heuristic cost : {h_cost}')
-            #     print(f'Total cost     : {f_cost}')
-            #     print()
+            if self.iteration % self.print_every == 0:
+                print(f'Evaluation cost: {g_cost}')
+                print(f'Heuristic cost : {h_cost}')
+                print(f'Total cost     : {f_cost}')
+                print()
             return f_cost
 
         else:
@@ -205,11 +180,11 @@ class StudentMotionPlanner(AStarSearch):
             g_cost = node_current.priority
             h_cost = self.heuristic_function(node_current=node_current)
             f_cost = g_cost + h_cost
-            # if self.iteration % self.print_every == 0:
-            #     print(f'Evaluation cost: {g_cost}')
-            #     print(f'Heuristic cost : {h_cost}')
-            #     print(f'Total cost     : {f_cost}')
-            #     print()
+            if self.iteration % self.print_every == 0:
+                print(f'Evaluation cost: {g_cost}')
+                print(f'Heuristic cost : {h_cost}')
+                print(f'Total cost     : {f_cost}')
+                print()
             return f_cost
 
 
@@ -236,13 +211,9 @@ class StudentMotionPlanner(AStarSearch):
 
         try:
 
-            # No need to test. It's already tested before adding this current node!
-            # if not self.is_collision_free(path):
-            #     print('Collision!')
-            #     return np.inf
-
-            if self.iteration % self.print_every == 0:
-                print(f'Path time step: {path[-1].time_step}')
+            if not self.is_collision_free(path):
+                # print('Collision!')
+                return np.inf
 
             # Scale weighting using normalized ratio of current distance to goal vs initial distance to goal.
             # `scale_factor` goes to 1 when near the goal.
@@ -272,9 +243,6 @@ class StudentMotionPlanner(AStarSearch):
                 'cost': distance_normalized,
                 'weight': 10,
             }
-
-            if self.iteration % self.print_every == 0:
-                print(f'Current distance to goal: {distance_from_curr}')
 
             # calc_travelled_distance
             # print(mapping)
@@ -371,8 +339,8 @@ class StudentMotionPlanner(AStarSearch):
                 'cost': lanelet_cost,
                 'weight': 1,
             }
-            # if self.iteration % self.print_every == 0 or self.goal_is_reached:
-            #     print(f'Current lanelet id: {center_lanelet_ids}. Right direction? {[l_id in self.set_ids_lanelets_same_direction for l_id in center_lanelet_ids]}')
+            if self.iteration % self.print_every == 0 or self.goal_is_reached:
+                print(f'Current lanelet id: {center_lanelet_ids}. Right direction? {[l_id in self.set_ids_lanelets_same_direction for l_id in center_lanelet_ids]}')
 
 
 
@@ -408,19 +376,6 @@ class StudentMotionPlanner(AStarSearch):
             #     'cost': opposite_cost_v + opposite_cost_c,
             #     'weight': 10,
             # }
-
-
-
-            # Reduce cost if current lanelet is on planned route!
-            route_cost = 1
-            for lanelet_id in center_lanelet_ids:
-                if lanelet_id in self.set_ids_lanelets:
-                    route_cost = 0
-
-            partial_costs['route'] = {
-                'cost': route_cost,
-                'weight': 1,
-            }
 
 
 
@@ -648,9 +603,8 @@ class StudentMotionPlanner(AStarSearch):
             # Calculate cost from time step.
             weight_time = 0.1
             time_step_normalized = path[-1].time_step / self.planningProblem.goal.state_list[0].time_step.end
-            # if path[-1].time_step > self.planningProblem.goal.state_list[0].time_step.end:
-            #     # print(f'Goal state time step exceeded! {path[-1].time_step} {self.planningProblem.goal.state_list[0].time_step.end}')
-            #     return np.inf
+            if path[-1].time_step > self.planningProblem.goal.state_list[0].time_step.end:
+                return np.inf
             if time_step_normalized >= 0.7:
                 if path[-1].time_step < self.planningProblem.goal.state_list[0].time_step.start:
                     weight_time *= 1.1
@@ -682,17 +636,11 @@ class StudentMotionPlanner(AStarSearch):
 
             cost = 0
             for key, value in partial_costs.items():
-                # if self.iteration % self.print_every == 0:# or self.goal_is_reached:
-                #     print(f"Cost: {key:<16} = {value['cost']: 9.4f} | Weighted = {value['weight'] * value['cost']: 9.4f}")
+                if self.iteration % self.print_every == 0 or self.goal_is_reached:
+                    print(f"Cost: {key:<16} = {value['cost']: 9.4f} | Weighted = {value['weight'] * value['cost']: 9.4f}")
                 cost += value['weight'] * value['cost']
             # cost = cost * 2#len(partial_costs.items()) * 2
 
-
-        except TimeoutError as e:
-            raise e
-
-        except MemoryError as e:
-            raise e
 
         except Exception as e:
 
