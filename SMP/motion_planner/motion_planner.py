@@ -17,6 +17,7 @@ from SMP.motion_planner.search_algorithms.best_first_search import UniformCostSe
 from SMP.motion_planner.search_algorithms.depth_limited_search import DepthLimitedSearch
 # motion planner from student
 from SMP.motion_planner.search_algorithms.student import StudentMotionPlanner
+from SMP.motion_planner.search_algorithms.student_gbfs import StudentMotionPlannerGBFS
 from SMP.motion_planner.search_algorithms.student_example import StudentMotionPlannerExample
 
 
@@ -32,6 +33,8 @@ class MotionPlannerType(Enum):
     ASTAR = "astar"
     DLS = "dls"
     STUDENT = "student"
+    STUDENT_ASTAR = "student_astar"
+    STUDENT_GBFS = "student_gbfs"
     STUDENT_EXAMPLE = "student_example"
 
 
@@ -57,6 +60,8 @@ class MotionPlanner:
     dict_motion_planners[MotionPlannerType.DLS] = DepthLimitedSearch
     # add your own custom motion planner here
     dict_motion_planners[MotionPlannerType.STUDENT] = StudentMotionPlanner
+    dict_motion_planners[MotionPlannerType.STUDENT_ASTAR] = StudentMotionPlanner
+    dict_motion_planners[MotionPlannerType.STUDENT_GBFS] = StudentMotionPlannerGBFS
     dict_motion_planners[MotionPlannerType.STUDENT_EXAMPLE] = StudentMotionPlannerExample
 
     @classmethod
@@ -69,6 +74,7 @@ class MotionPlanner:
                                                                                          DepthFirstSearch,
                                                                                          AStarSearch,
                                                                                          StudentMotionPlanner,
+                                                                                         StudentMotionPlannerGBFS,
                                                                                          StudentMotionPlannerExample]:
         """
         Method to instantiate the specified motion planner.
@@ -134,6 +140,14 @@ class MotionPlanner:
         Method to instantiate your motion planner..
         """
         return MotionPlanner.create(scenario, planning_problem, automaton, plot_config, MotionPlannerType.STUDENT)
+
+    @classmethod
+    def StudentMotionPlannerGBFS(cls, scenario: Scenario, planning_problem: PlanningProblem, automaton: ManeuverAutomaton,
+                             plot_config=DefaultPlotConfig) -> StudentMotionPlannerGBFS:
+        """
+        Method to instantiate your motion planner..
+        """
+        return MotionPlanner.create(scenario, planning_problem, automaton, plot_config, MotionPlannerType.STUDENT_GBFS)
 
     @classmethod
     def StudentMotionPlannerExample(cls, scenario: Scenario, planning_problem: PlanningProblem,
