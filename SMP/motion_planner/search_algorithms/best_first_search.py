@@ -4,6 +4,7 @@ from abc import abstractmethod, ABC
 from typing import Tuple, Dict, Any, List, Union
 
 from commonroad.scenario.trajectory import State
+from commonroad.scenario.trajectory import Trajectory
 
 from SMP.maneuver_automaton.motion_primitive import MotionPrimitive
 from SMP.motion_planner.node import PriorityNode
@@ -83,6 +84,8 @@ class BestFirstSearch(SearchBaseClass, ABC):
         while not self.frontier.empty():
             # pop the last node
             node_current = self.frontier.pop()
+            while np.isinf(node_current.priority) and not self.frontier.empty():
+                node_current = self.frontier.pop()
 
             dict_status_nodes = update_visualization(primitive=node_current.list_paths[-1],
                                                      status=MotionPrimitiveStatus.CURRENTLY_EXPLORED,
@@ -93,6 +96,11 @@ class BestFirstSearch(SearchBaseClass, ABC):
 
             # goal test
             if self.reached_goal(node_current.list_paths[-1]):
+                print(f'Solution eval cost: {self.evaluation_function(node_current=node_current):.4f}')
+                trajectory = Trajectory(node_current.list_paths[-1][0].time_step, node_current.list_paths[-1])
+                print(f'Solution real cost: {self.ce.evaluate_pp_solution(self.scenario, self.planningProblem, trajectory).total_costs:.4f}')
+                distance = self.calc_euclidean_distance(node_current)
+                print(f'Solution distance to goal: {distance}')
                 path_solution = self.remove_states_behind_goal(node_current.list_paths)
                 list_status_nodes = self.plot_solution(path_solution=path_solution, node_status=dict_status_nodes,
                                                        list_states_nodes=list_status_nodes)
@@ -100,6 +108,7 @@ class BestFirstSearch(SearchBaseClass, ABC):
                 return path_solution, node_current.list_primitives, list_status_nodes
 
             # check all possible successor primitives(i.e., actions) for current node
+            # print(f'#Successors of current node: {node_current.get_successors()}')
             for primitive_successor in node_current.get_successors():
 
                 # translate/rotate motion primitive to current position
@@ -121,7 +130,12 @@ class BestFirstSearch(SearchBaseClass, ABC):
                                           list_primitives=list_primitives_current,
                                           depth_tree=node_current.depth_tree + 1,
                                           priority=node_current.priority)
+                if node_child.list_paths[-1][-1].time_step > self.planningProblem.goal.state_list[0].time_step.end:
+                    # print(f'Goal state time step exceeded! {path[-1].time_step} {self.planningProblem.goal.state_list[0].time_step.end}')
+                    continue
                 f_child = self.evaluation_function(node_current=node_child)
+                if np.isinf(f_child):
+                    continue
 
                 # insert the child to the frontier:
                 dict_status_nodes = update_visualization(primitive=node_child.list_paths[-1],
