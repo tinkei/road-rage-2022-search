@@ -196,7 +196,7 @@ def display_steps(scenario_data, config, algorithm, **args):
     display(button_visual)
 
 
-def plot_primitives(list_primitives, figsize=(12, 3)):
+def plot_primitives(list_primitives, figsize=(24, 6)):
     fig = plt.figure(figsize=figsize)
     ax = fig.gca()
 
@@ -238,12 +238,21 @@ def create_trajectory_from_list_states(list_paths_primitives: List[List[State]])
 
 def visualize_solution(scenario: Scenario, planning_problem_set: PlanningProblemSet, trajectory: Trajectory) -> None:
     from IPython import display
+    from matplotlib import animation
+    from matplotlib.animation import FFMpegWriter
+    from vehiclemodels.parameters_vehicle1 import parameters_vehicle1
+    from vehiclemodels.parameters_vehicle2 import parameters_vehicle2
+    from vehiclemodels.parameters_vehicle3 import parameters_vehicle3
+    vehicle1 = parameters_vehicle1()
+    vehicle2 = parameters_vehicle2()
+    vehicle3 = parameters_vehicle3()
 
     num_time_steps = len(trajectory.state_list)
 
     # create the ego vehicle prediction using the trajectory and the shape of the obstacle
     dynamic_obstacle_initial_state = trajectory.state_list[0]
-    dynamic_obstacle_shape = Rectangle(width=1.8, length=4.3)
+    # dynamic_obstacle_shape = Rectangle(width=1.8, length=4.3)
+    dynamic_obstacle_shape = Rectangle(width=vehicle1.w, length=vehicle1.l)
     dynamic_obstacle_prediction = TrajectoryPrediction(trajectory, dynamic_obstacle_shape)
 
     # generate the dynamic obstacle according to the specification
