@@ -73,6 +73,9 @@ class SearchBaseClass(ABC):
         if hasattr(self.state_initial, 'slip_angle'):
             del self.state_initial.slip_angle
 
+        if hasattr(self.state_initial, 'acceleration'):
+            del self.state_initial.acceleration
+
         # parse planning problem
         self.parse_planning_problem()
         self.initialize_lanelets_costs()
@@ -623,7 +626,8 @@ class SearchBaseClass(ABC):
                         if isinstance(sh, Circle):
                             vertices.append(sh.center)
                         elif isinstance(sh, Rectangle) or isinstance(sh, Polygon):
-                            vertices.append(sh.vertices)
+                            # vertices.append(sh.vertices)
+                            vertices += sh.vertices.tolist()
                 else:
                     # distinguish between type of shape (circle has no vertices)
                     if isinstance(o_shape, Circle):
@@ -728,7 +732,7 @@ class SearchBaseClass(ABC):
 
         return correctLanelets
 
-    def calc_dist_to_closest_obstacle(self, lanelet_id: int, pos: np.ndarray, time_step: int) -> float:
+    def calc_dist_to_closest_obstacle(self, lanelet_id: int, pos: np.ndarray, time_step: int, margin: float=1.0) -> float:
         """
         Returns distance between the given position and the center of the closest obstacle in the given lanelet
         (specified by lanelet id).
@@ -744,7 +748,14 @@ class SearchBaseClass(ABC):
         shortestDist = math.inf
         for obstacleObj in obstacles_in_lanelet:
             shape_obs = obstacleObj.occupancy_at_time(time_step).shape
-            if isinstance(shape_obs, Circle):
+            if isinstance(shape_obs, Rectangle) or isinstance(shape_obs, Polygon):
+                shape_obs.margin = margin
+                for point in shape_obs.vertices:
+                    if SearchBaseClass.distance(pos, point) < shortestDist:
+                        shortestDist = SearchBaseClass.distance(pos, point)
+                if SearchBaseClass.distance(pos, shape_obs.center) < shortestDist:
+                    shortestDist = SearchBaseClass.distance(pos, shape_obs.center)
+            elif isinstance(shape_obs, Circle):
                 if SearchBaseClass.distance(pos, shape_obs.center) < shortestDist:
                     shortestDist = SearchBaseClass.distance(pos, shape_obs.center)
         return shortestDist
