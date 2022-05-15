@@ -2,27 +2,86 @@
 
 # setting
 setting:
+
   # input directory of your intended CommonRoad scenarios
-  input_path: ../../scenarios/exercise/
+  # input_path: scenarios2018/exercise/
+  input_path: scenarios_phase_1/static/
+  # input_path: scenarios-recorded-2020a/
+
   # output directory of CommonRoad solution files
-  output_path: ../../outputs/solutions/
+  # output_path: outputs2018/solutions-batch-Astar-v1/
+  # output_path: outputs2018/solutions-batch-GBFS-v1/
+  # output_path: outputs2018/solutions-batch-Astar-v2/
+  # output_path: outputs2018/solutions-batch-Astar-v2-shiftall/
+  # output_path: outputs2018/solutions-batch-GBFS-v2-shiftall/
+  # output_path: outputs2018/solutions-batch-Astar-v3/
+
+  # output_path: outputs2020/solutions-batch-GBFS-v1/
+  # output_path: outputs2020/solutions-batch-GBFS-v1-shiftall/
+  # output_path: outputs2020/solutions-batch-Astar-v2/
+  # output_path: outputs2020/solutions-batch-GBFS-v2/
+  # output_path: outputs2020/solutions-batch-Astar-v3/
+  output_path: outputs2020/solutions-batch-Astar-v3.2/
+  # output_path: outputs2020/solutions-batch-Astar-v3.2-OppoLaneOk/
+
+  # output_path: outputs2020a/solutions-batch-Astar-v3.2-BMW/
+  # output_path: outputs2020a/solutions-batch-Astar-v3.2-Ford/
+  # output_path: outputs2020a/solutions-batch-GBFS-v3.1/
+
   # overwrite solution file if it already exists
   overwrite: True
   # validate solution with the feasibility checker
   validate_solution: True
 
   # create gif files for valid solutions
-  create_gif: False
-  output_path_gif: ../../outputs/gifs
+  create_gif: True
+  # output_path_gif: outputs2018/gifs
+  # output_path_gif: outputs2018/gifs-batch-Astar-v1/
+  # output_path_gif: outputs2018/gifs-batch-GBFS-v1/
+  # output_path_gif: outputs2018/gifs-batch-Astar-v2/
+  # output_path_gif: outputs2018/gifs-batch-Astar-v2-shiftall/
+  # output_path_gif: outputs2018/gifs-batch-GBFS-v2-shiftall/
+  # output_path_gif: outputs2018/gifs-batch-Astar-v3/
+
+  # output_path_gif: outputs2020/gifs-batch-GBFS-v1/
+  # output_path_gif: outputs2020/gifs-batch-GBFS-v1-shiftall/
+  # output_path_gif: outputs2020/gifs-batch-Astar-v2/
+  # output_path_gif: outputs2020/gifs-batch-GBFS-v2/
+  # output_path_gif: outputs2020/gifs-batch-Astar-v3/
+  output_path_gif: outputs2020/gifs-batch-Astar-v3.2/
+  # output_path_gif: outputs2020/gifs-batch-Astar-v3.2-OppoLaneOk/
+
+  # output_path_gif: outputs2020a/gifs-batch-Astar-v3.2-BMW/
+  # output_path_gif: outputs2020a/gifs-batch-Astar-v3.2-Ford/
+  # output_path_gif: outputs2020a/gifs-batch-GBFS-v3.1/
 
   # choose the number of parallel executions of motion planners
   # the valid range is [1, max number of cpus on your system]
-  num_worker_processes: 6
+  num_worker_processes: 3
 
 # logging
 logging:
+
   log_to_file: True
-  log_file_dir: ../../outputs/logs
+  # log_file_dir: outputs2018/logs-batch-Astar-v1/
+  # log_file_dir: outputs2018/logs-batch-GBFS-v1/
+  # log_file_dir: outputs2018/logs-batch-Astar-v2/
+  # log_file_dir: outputs2018/logs-batch-Astar-v2-shiftall/
+  # log_file_dir: outputs2018/logs-batch-GBFS-v2-shiftall/
+  # log_file_dir: outputs2018/logs-batch-Astar-v3/
+
+  # log_file_dir: outputs2020/logs-batch-GBFS-v1/
+  # log_file_dir: outputs2020/logs-batch-GBFS-v1-shiftall/
+  # log_file_dir: outputs2020/logs-batch-Astar-v2/
+  # log_file_dir: outputs2020/logs-batch-GBFS-v2/
+  # log_file_dir: outputs2020/logs-batch-Astar-v3/
+  log_file_dir: outputs2020/logs-batch-Astar-v3.2/
+  # log_file_dir: outputs2020/logs-batch-Astar-v3.2-OppoLaneOk/
+
+  # log_file_dir: outputs2020a/logs-batch-Astar-v3.2-BMW/
+  # log_file_dir: outputs2020a/logs-batch-Astar-v3.2-Ford/
+  # log_file_dir: outputs2020a/logs-batch-GBFS-v3.1/
+
   log_file_name: log
   add_timestamp_to_log_file: True
 
@@ -34,23 +93,31 @@ logging:
 default: &default # create an anchor point for default parameters
   # vehicle model, e.g., kinematic single-track model
   vehicle_model: KS
-  # vehicle type, e.g, BMW 320i
-  vehicle_type: BMW_320i
+  # vehicle type, e.g, BMW_320i, FORD_ESCORT
+  vehicle_type: FORD_ESCORT
+  # vehicle_type: BMW_320i
   # cost function
-  cost_function: SM1
+  cost_function: TR1
+  # cost_function: SM1
   # the planner that is used to solve for solutions.
-  # possible values are: bfs, dfs, dls, ucs, gbfs, astar, student, student_example
-  planner: astar
+  # possible values are: bfs, dfs, dls, ucs, gbfs, astar, student, student_gbfs, student_example
+  planner: student
   # planning problem index. for cooperative scenarios: 0, 1, 2, ..., otherwise: 0
   planning_problem_idx: 0
   # maximum depth of the search tree
   max_tree_depth: 100
   # timeout time setting for motion planner [s].
-  timeout: 30
+  timeout: 300
 
 default_automaton_files:
-  FORD_ESCORT: V_0.0_20.0_Vstep_1.0_SA_-0.91_0.91_SAstep_0.23_T_0.5_Model_FORD_ESCORT
-  BMW_320i: V_0.0_20.0_Vstep_4.0_SA_-1.066_1.066_SAstep_0.18_T_0.5_Model_BMW_320i
+  # FORD_ESCORT: V_0.0_20.0_Vstep_1.0_SA_-0.91_0.91_SAstep_0.23_T_0.5_Model_FORD_ESCORT
+  FORD_ESCORT: /home/tk/rzgdatashare/commonroad/my_automatons/V_0.0_42.0_Vstep_3.0_SA_-0.91_0.91_SAstep_0.15_T_0.5_Model_FORD_ESCORT
+  # FORD_ESCORT: /home/tk/rzgdatashare/commonroad/my_automatons/SQ_V_0.0_42.0_Vstep_3.0_SA_-0.91_0.91_SAstep_0.15_T_0.5_Model_FORD_ESCORT
+  # FORD_ESCORT: /home/tk/rzgdatashare/commonroad/my_automatons/REV_SQ_V_0.0_36.0_Vstep_3.0_SA_-0.91_0.91_SAstep_0.15_T_0.5_Model_FORD_ESCORT
+  # BMW_320i: V_0.0_20.0_Vstep_4.0_SA_-1.066_1.066_SAstep_0.18_T_0.5_Model_BMW_320i
+  BMW_320i: /home/tk/rzgdatashare/commonroad/my_automatons/V_0.0_42.0_Vstep_3.0_SA_-1.066_1.066_SAstep_0.18_T_0.5_Model_BMW_320i
+  # BMW_320i: /home/tk/rzgdatashare/commonroad/my_automatons/SQ_V_0.0_42.0_Vstep_3.0_SA_-1.066_1.066_SAstep_0.18_T_0.5_Model_BMW_320i
+  # BMW_320i: /home/tk/rzgdatashare/commonroad/my_automatons/REV_SQ_V_0.0_36.0_Vstep_3.0_SA_-1.066_1.066_SAstep_0.18_T_0.5_Model_BMW_320i
   VW_VANAGON: V_0.0_20.0_Vstep_1.0_SA_-1.023_1.023_SAstep_0.26_T_0.5_Model_VW_VANAGON
 
 # custom settings for specific scenarios
