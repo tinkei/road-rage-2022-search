@@ -2,11 +2,11 @@
 
 outputs:
   # output directory for generated motion primitives
-  output_directory: ./saved_motion_primitives/
+  output_directory: ./my_motion_primitives/
 
 vehicles:
   # id of vehicle. 1: FORD_ESCORT, 2: BMW_320i, 3: VW_VANAGON
-  vehicle_type_id: 2
+  vehicle_type_id: 1
 
 primitives:
   # time length of trajectory [s]
@@ -18,9 +18,9 @@ primitives:
 
   # sampling range [m/s]
   velocity_sample_min: 0.0
-  velocity_sample_max: 20.0
+  velocity_sample_max: 42.0
   # for a step of 1.0 m/s, num = (v_max - v_min) / 1.0 + 1
-  num_sample_velocity: 6
+  num_sample_velocity: 15
 
   # steer to one side only, we can mirror the primitives afterwards [rad], min is usually 0
   steering_angle_sample_min: 0

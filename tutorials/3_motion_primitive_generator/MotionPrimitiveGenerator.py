@@ -108,7 +108,6 @@ class MotionPrimitiveGenerator:
         main function to generate motion primitives.
         """
         # create lists of possible samples for velocity and steering angle
-        print(cls.parameter)
         list_samples_v, list_samples_sa = cls.generate_list_of_samples()
 
         # for some statistics
@@ -123,7 +122,7 @@ class MotionPrimitiveGenerator:
         # for saving results
         list_motion_primitives = []
         # number of time steps for simulation
-        num_step_sim = int(int(cls.parameter.duration * 10) / int(cls.parameter.dt * 10))
+        num_step_sim = int(int(cls.parameter.duration * 100) / int(cls.parameter.dt * 100))
 
         # v = velocity, sa = steering_angle
         # iterate through possible instances of the Cartesian product of list_samples_v and list_samples_sa
@@ -188,10 +187,15 @@ class MotionPrimitiveGenerator:
         list_samples_v = np.linspace(cls.parameter.velocity_sample_min,
                                      cls.parameter.velocity_sample_max,
                                      cls.parameter.num_sample_velocity)
+        # list_samples_v = (np.linspace(0, 1, cls.parameter.num_sample_velocity) ** 2)* cls.parameter.velocity_sample_max
+        # list_samples_v = np.concatenate((-np.flip(list_samples_v)[-3:-1], list_samples_v)) # Allow limited reverse.
+        print(f'{list_samples_v=}')
 
         list_samples_steering_angle = np.linspace(cls.parameter.steering_angle_sample_min,
                                                   cls.parameter.steering_angle_sample_max,
                                                   cls.parameter.num_sample_steering_angle)
+        # list_samples_steering_angle = (np.linspace(0, 1, cls.parameter.num_sample_steering_angle) ** 2) * cls.parameter.steering_angle_sample_max
+        print(f'{list_samples_steering_angle=}')
 
         return list_samples_v, list_samples_steering_angle
 
@@ -396,18 +400,20 @@ class MotionPrimitiveGenerator:
             step_sa = round(cls.parameter.steering_angle_sample_max * 2 /
                             (cls.parameter.num_sample_steering_angle - 1) / 2, 2)
 
-        file_name = "V_{}_{}_Vstep_{}_SA_{}_{}_SAstep_{}_T_{}_Model_{}.xml".format(cls.parameter.velocity_sample_min,
-                                                                                   cls.parameter.velocity_sample_max,
-                                                                                   step_v,
-                                                                                   -cls.parameter.steering_angle_sample_max,
-                                                                                   cls.parameter.steering_angle_sample_max,
-                                                                                   step_sa,
-                                                                                   round(cls.parameter.duration, 1),
-                                                                                   cls.parameter.name_vehicle)
+        file_name = "V_{}_{}_Vstep_{}_SA_{}_{}_SAstep_{}_T_{}_Model_{}.xml".format(  cls.parameter.velocity_sample_min,
+                                                                                            cls.parameter.velocity_sample_max,
+                                                                                            step_v,
+                                                                                            -cls.parameter.steering_angle_sample_max,
+                                                                                            cls.parameter.steering_angle_sample_max,
+                                                                                            step_sa,
+                                                                                            round(cls.parameter.duration, 1),
+                                                                                            cls.parameter.name_vehicle)
 
         with open(os.path.join(dir_output, file_name), "w") as f:
             f.write(node_xml_prettified)
             print("File saved: {}".format(file_name))
+
+        return file_name
 
     @classmethod
     def create_xml_node(cls, list_motion_primitives):
